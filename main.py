@@ -7,7 +7,7 @@
 import numpy as np
 from typing import Callable
 
-
+#secant do poprawienia
 def func(x: int | float | np.ndarray) -> int | float | np.ndarray:
     """Funkcja wyliczająca wartości funkcji f(x).
     f(x) = e^(-2x) + x^2 - 1
@@ -103,7 +103,32 @@ def bisection(
             - Liczba wykonanych iteracji.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    fa = f(a)
+    fb = f(b)
+    
+    
+    if fa * fb > 0:
+        return None
+    
+    for i in range(1, max_iter + 1):
+        c = (a + b) / 2
+        fc = f(c)
+        
+        
+        if abs(fc) < epsilon or (b - a)/2 < epsilon:
+            return c, i
+        
+        
+        if fa * fc < 0:
+            b = c
+            fb = fc
+        else:
+            a = c
+            fa = fc
+    
+    
+    return (a + b)/2, max_iter
+
 
 
 def secant(
@@ -130,9 +155,32 @@ def secant(
             - Liczba wykonanych iteracji.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
 
+    fa, fb = f(a), f(b)
+    if fa * fb > 0:
+        return None 
 
+    x0, x1 = a, b
+    f0, f1 = fa, fb
+
+    for iteration in range(1, max_iters + 1):
+        
+        denominator = f1 - f0
+        if denominator == 0:
+            denominator = 1e-14
+
+        x2 = x1 - f1 * (x1 - x0) / denominator
+        f2 = f(x2)
+
+        if abs(f2) < epsilon:
+            return np.float64(x2), iteration
+
+        x0, f0 = x1, f1
+        x1, f1 = x2, f2
+
+    return np.float64(x2), max_iters
+
+   
 def difference_quotient(
     f: Callable[[float], float], x: int | float, h: int | float
 ) -> float | None:
@@ -150,8 +198,9 @@ def difference_quotient(
         (float): Wartość ilorazu różnicowego.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
-
+    if h == 0:
+        return None
+    return (f(x + h) - f(x)) / h
 
 def newton(
     f: Callable[[float], float],
@@ -182,4 +231,21 @@ def newton(
             - Liczba wykonanych iteracji.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    x = a if f(a) * ddf(a) > 0 else b
+    fx = f(x)
+
+    for iteration in range(1, max_iter + 1):
+        dfx = df(x)
+        if dfx == 0:
+            return None
+
+        x_new = x - fx / dfx
+        fx_new = f(x_new)
+
+        if abs(fx_new) < epsilon:
+            return np.float64(x_new), iteration
+
+        x = x_new
+        fx = fx_new
+
+    return np.float64(x), max_iter
