@@ -7,7 +7,6 @@
 import numpy as np
 from typing import Callable
 
-#secant do poprawienia
 def func(x: int | float | np.ndarray) -> int | float | np.ndarray:
     """Funkcja wyliczająca wartości funkcji f(x).
     f(x) = e^(-2x) + x^2 - 1
@@ -155,32 +154,27 @@ def secant(
             - Liczba wykonanych iteracji.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-
-    fa, fb = f(a), f(b)
-    if fa * fb > 0:
-        return None 
-
-    x0, x1 = a, b
-    f0, f1 = fa, fb
-
-    for iteration in range(1, max_iters + 1):
-        
-        denominator = f1 - f0
-        if denominator == 0:
-            denominator = 1e-14
-
-        x2 = x1 - f1 * (x1 - x0) / denominator
-        f2 = f(x2)
-
-        if abs(f2) < epsilon:
-            return np.float64(x2), iteration
-
-        x0, f0 = x1, f1
-        x1, f1 = x2, f2
-
-    return np.float64(x2), max_iters
-
-   
+    fa = f(a)
+    fb = f(b)
+    x1 = a
+    x0 = b
+    i = 0
+    if fa*fb > 0:
+        return None
+    while abs(x0-x1) > epsilon and i < max_iters:
+        i += 1
+        x1 = x0
+        x0 = a - fa*(b-a)/(fb-fa)
+        f0 = f(x0)
+        if abs(f0) < epsilon:
+            return x0, i
+        if fa*f0 < 0:
+            b = x0
+            fb = f0
+        else:
+            a = x0
+            fa = f0
+    return x0, i
 def difference_quotient(
     f: Callable[[float], float], x: int | float, h: int | float
 ) -> float | None:
